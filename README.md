@@ -3,4 +3,6 @@ berkeley_collabs
 
 Scientific collaborations between programs and departments at UC Berkeley.
 
-This is a visualization of scientific collaborations among UC Berkeley academic departments, programs, and local research organizations, based on article co-authorship. Each ring segment represents an individual program. Mouse over a segment to focus on a program. The thickness of the links between programs represents the number of PubMed-indexed research articles published between 1994 and 2014 by authors affiliated with both programs.</p><p>Data source: <a href=http://www.ncbi.nlm.nih.gov/pmc/>PubMed Central</a>.</p><p>Created by <a href=http://nbilenko.com>Natalia Bilenko</a>.</p>
+<img src=http://nbilenko.com/bsr/collaborations/collabs.png>
+
+This is a visualization created for the cover of the spring 2014 issue <a href=http://sciencereview.berkeley.edu>Berkeley Science Review</a>. It depicts scientific collaborations among UC Berkeley academic departments, programs, and local research organizations, based on article co-authorship. Each ring segment represents an individual program. Mouse over a segment to focus on a program. The thickness of the links between programs represents the number of PubMed-indexed research articles published between 1994 and 2014 by authors affiliated with both programs.</p><p>Data source: <a href=http://www.ncbi.nlm.nih.gov/pmc/>PubMed Central</a>.</p><p>Created by <a href=http://nbilenko.com>Natalia Bilenko</a>.</p>
