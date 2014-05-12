@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+<title>Scientific collaborations at UC Berkeley</title>
+<script src="./jquery.min.js"></script> 
+<script src="./jquery.sticky.js"></script>
+<script src="./d3.v3.min.js"></script>
+<script src="./colorbrewer.js"></script>
+<style>
+body {
+  /*background: #fcfcfa;*/
+  background: black;
+  color: #333;
+  font-family: "PT Serif", serif;
+  margin: 1em auto 4em auto;
+  position: relative;
+}
+h1 {
+  font: 600 30px Minion Pro, serif;
+  color: white;
+  text-align: center;
+}
+a, a:visited{
+  color: #0090D2;
+  text-decoration: none;
+}
+a:hover {color: #0063A6;}
+a:active,a:focus{
+  color: #0063A6;
+  position: relative;
+  top: 1px;
+}
+#circle circle {
+  fill: black;
+  pointer-events: all;
+}
+
+#legendContainer {
+  margin-top: -50px;
+}
+
+.group path {
+  fill-opacity: 1.0;
+}
+
+path.chord {
+  stroke: #000;
+  stroke-width: .25px;
+}
+
+#circle:hover path.fade {
+  display: none;
+}
+  .about {
+    position: absolute;
+    top:100px;
+    left:-1000px;
+    width:280px;
+    position: fixed;
+    z-index: 9999;
+    -webkit-transition: left .3s ease-in;
+    padding: 10px 10px 10px 10px;
+    background: #eee;
+    border: 5px solid #555555;
+  }
+
+.about.active
+{
+    left: 10px;
+  }
+   
+  .aboutlink{
+    position: absolute;
+    top:0px;
+    left:20px;
+    width:100px;
+    padding: 10px 10px 10px 10px;
+    color: #ddd;
+    font: "400 14px Myriad Pro, sans-serif";
+  }
+
+  #aboutlink:hover {
+    color: white;
+  }
+
+</style>
+<script>
+  $(document).ready(function(){
+    $('#aboutlink').click(function () {
+                if ($('#about').hasClass('active')) {
+                    $('#about').removeClass('active')
+                } else {
+                    $('#about').addClass('active')
+                }
+                return false;
+          });
+      window.addEventListener("keydown", function(e) {
+      if (e.keyCode == 191)
+        if ($('#about').hasClass('active')) {
+            $('#about').removeClass('active')
+        } else {
+            $('#about').addClass('active')
+        }
+        return false;
+        });
+    });
+  </script>
+
+</head>
+<body>
+<h1>Scientific collaborations at UC Berkeley</h1>
+
+<script>
+var width = Math.min(window.innerWidth, window.innerHeight) - 100,
+    height = width,
+    outerRadius = Math.min(width, height) / 2 - 10,
+    innerRadius = outerRadius - 50;
+
+var sent_init = "Hover over a ring segment to select an academic program"
+
+var sentence = d3.select("body").append("svg")
+  .attr("width", window.innerWidth)
+  .attr("height", 30)
+  .attr("id", "sent")
+  .append("text")
+  // .attr("x", width/2)
+  .attr("y", 20)
+  .style("font", "400 20px Myriad Pro, sans-serif")
+  .text(sent_init)
+  .attr("x", function(d, i) { return (window.innerWidth - width) / 2 + width/2 - this.getComputedTextLength() / 2; })
+  .style("fill", "white");
+
+var fill = d3.scale.ordinal()
+    .domain(d3.range(7))
+    .range(colorbrewer.Dark2[7]);
+
+var formatPercent = d3.format(".1%");
+
+var arc = d3.svg.arc()
+    .innerRadius(innerRadius)
+    .outerRadius(outerRadius);
+
+var layout = d3.layout.chord()
+    .padding(.03)
+    .sortSubgroups(d3.descending)
+    .sortChords(d3.ascending);
+
+var path = d3.svg.chord()
+    .radius(innerRadius);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + 220)
+    .attr("height", height + 200)
+    .style("margin-left", (window.innerWidth - width) / 2)
+  .append("g")
+    .attr("id", "circle")
+    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+svg.append("circle")
+    .attr("r", outerRadius);
+
+d3.csv("depts.csv", function(depts) {
+  d3.json("dept_matrix.json", function(matrix) {
+
+    // Compute the chord layout.
+    layout.matrix(matrix);
+
+    // // Add a group per neighborhood.
+    var group = svg.selectAll(".group")
+        .data(layout.groups)
+      .enter().append("g")
+        .attr("class", "group")
+        .on("mouseover", mouseover);
+
+    // // Add a mouseover title.
+    group.append("title").text(function(d, i) {
+      return depts[i].name;
+    });
+
+    // Add the group arc.
+    var groupPath = group.append("path")
+        .attr("id", function(d, i) { return "group" + i; })
+        .attr("d", arc)
+        .style("fill", function(d, i) { return fill(+depts[i].cat-1); });
+
+    // Add the chords.
+    var chord = svg.selectAll(".chord")
+        .data(layout.chords)
+      .enter().append("path")
+        .attr("class", "chord")
+        .style("fill", "#ddd")
+        .attr("d", path);
+
+    function mouseover(d, i) {
+      sentence
+      .text(depts[i].name)
+      .attr("x", function(d, i) { return (window.innerWidth - width) / 2 + width / 2 - this.getComputedTextLength() / 2; });
+      chord.classed("fade", function(p) {
+        return p.source.index != i
+            && p.target.index != i;
+      });
+    }
+   function updateWindow() {
+    width = Math.min(window.innerWidth, window.innerHeight) - 40,
+    height = width
+    outerRadius = Math.min(width, height) / 2 - 10,
+    innerRadius = outerRadius - 50;
+    svg
+    .attr("width", width)
+    .attr("height", height)
+    .style("margin-left", (window.innerWidth - width) / 2);
+    d3.selectAll("circle")
+    .attr("r", outerRadius)
+    sentence
+    .attr("width", window.innerWidth)
+    .attr("x", function(d, i) { return (window.innerWidth - width) / 2 + width/2 - this.getComputedTextLength() / 2; });
+  }
+  window.onresize = updateWindow;
+
+d3.csv("dept_labels.csv", function(labels) {
+
+ var legendRect = svg.selectAll("rect")
+    .data(labels)
+    .enter()
+    .append("rect")
+    .attr("x", 5 * width / 12 + 20)
+    .attr("y", function(d, i) {return 15*i - 5* height / 12 + 10} )
+    .attr("width", 10)
+    .attr("height", 10)
+    .attr("fill", function(d, i) {return fill(i)});
+
+var legendText = svg.selectAll("text")
+  .data(labels)
+  .enter()
+  .append("text")
+  .text(function(d,i) { return labels[i].labels})
+  .attr("x", 5 * width / 12 + 35)
+  .attr("y", function(d, i) {return 15*i - 5* height / 12 + 20} )
+  .attr("font-family", "sans-serif")
+  .attr("font-size", "12px")
+  .attr("fill", "#eee");
+
+});
+  });
+});
+
+  var about = d3.select("body").append("div")
+    .attr("id", "about")
+    .attr("class", "about")
+    .attr("dy", ".35em")
+    .style("color", "black")
+    .style("font", "400 14px Myriad Pro, sans-serif")
+    .html("<p>This is a visualization of scientific collaborations among UC Berkeley academic departments, programs, and local research organizations, based on article co-authorship. Each ring segment represents an individual program. Mouse over a segment to focus on a program. The thickness of the links between programs represents the number of PubMed-indexed research articles published between 1994 and 2014 by authors affiliated with both programs.</p><p>Data source: <a href=http://www.ncbi.nlm.nih.gov/pmc/>PubMed Central</a>.</p><p>Created by <a href=http://nbilenko.com>Natalia Bilenko</a>.</p><p>To toggle this menu: click About or press ?.");
+
+ var aboutlink = d3.select("body").append("div")
+  .attr("id", "aboutlink")
+    .attr("class", "aboutlink")
+    .attr("dy", ".35em")
+    .html("About")
+
+</script>
